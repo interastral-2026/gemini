@@ -1,13 +1,15 @@
 
 import { Asset, Trade, BotConfig } from "../types";
 
-// در حالت لوکال از /api استفاده می‌کنیم که Vite آن را به Railway پروکسی می‌کند.
-// در حالت Railway، چون فرانت و بک روی یک دامین هستند، باز هم /api کار می‌کند.
-const BACKEND_URL = ""; 
+// آدرس مستقیم بک‌بند شما در Railway
+const BACKEND_URL = "https://eco-production-d6cd.up.railway.app"; 
 
 export const fetchPortfolio = async (config: BotConfig): Promise<Asset[]> => {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/portfolio`);
+    const response = await fetch(`${BACKEND_URL}/api/portfolio`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
     if (!response.ok) throw new Error(`Portfolio fetch failed: ${response.status}`);
     return await response.json();
   } catch (err) {
@@ -18,10 +20,14 @@ export const fetchPortfolio = async (config: BotConfig): Promise<Asset[]> => {
 
 export const fetchBotStatus = async (): Promise<{ isEmergencyStopped: boolean }> => {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/status`);
+    const response = await fetch(`${BACKEND_URL}/api/status`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
     if (!response.ok) throw new Error("Status fetch failed");
     return await response.json();
   } catch (err) {
+    console.error("Status fetch error:", err);
     return { isEmergencyStopped: false };
   }
 };
@@ -33,9 +39,11 @@ export const toggleEmergencyStop = async (stop: boolean): Promise<boolean> => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ stop })
     });
+    if (!response.ok) throw new Error("Emergency toggle failed");
     const result = await response.json();
     return !!result.isEmergencyStopped;
   } catch (err) {
+    console.error("Emergency toggle error:", err);
     return !stop; 
   }
 };
