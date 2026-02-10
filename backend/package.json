@@ -1,0 +1,17 @@
+
+{
+  "name": "spectral-overlord-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "@coinbase/coinbase-sdk": "^0.25.0",
+    "dotenv": "^16.4.5",
+    "@google/genai": "^1.40.0"
+  }
+}
