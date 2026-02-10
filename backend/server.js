@@ -6,7 +6,6 @@ import { Coinbase, Wallet } from '@coinbase/coinbase-sdk';
 
 const app = express();
 
-// تنظیمات CORS برای پذیرش درخواست‌ها از فرانت‌بند
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'OPTIONS'],
@@ -15,7 +14,6 @@ app.use(cors({
 
 app.use(express.json());
 
-// کلیدهای اصلی ارائه شده در درخواست کاربر
 const API_KEY_NAME = "organizations/d90bac52-0e8a-4999-b156-7491091ffb5e/apiKeys/79d55457-7e62-45ad-8656-31e1d96e0571";
 const PRIVATE_KEY_RAW = "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIADE7F++QawcWU5iZfqmo8iupxBkqfJsFV0KsTaGpRpLoAoGCCqGSM49\nAwEHoUQDQgAEhSKrrlzJxIh6hgr5fT0cZf3NO91/a6kRPkWRNG6kQlLW8FIzJ53Y\nDgbh5U2Zj3zlxHWivwVyZGMWMf8xEdxYXw==\n-----END EC PRIVATE KEY-----\n";
 
@@ -24,18 +22,17 @@ const PRIVATE_KEY = cleanKey(PRIVATE_KEY_RAW);
 
 let isEmergencyStopped = false;
 
-// پیکربندی SDK
 try {
   Coinbase.configure({ apiKeyName: API_KEY_NAME, privateKey: PRIVATE_KEY });
-  console.log("✅ Spectral AI Core: Coinbase SDK Authenticated with key ...571");
+  console.log("✅ Spectral AI Core: Coinbase SDK Connected Successfully.");
 } catch (err) {
-  console.error("❌ Coinbase Config Error:", err.message);
+  console.error("❌ Coinbase Authentication Failed:", err.message);
 }
 
-const fallbackAssets = [
-  { symbol: 'EUR', name: 'Euro', balance: 0.00, currentPrice: 1, entryPrice: 1, roi: 0, type: 'FIAT' },
-  { symbol: 'BTC', name: 'Bitcoin', balance: 0, entryPrice: 0, currentPrice: 0, roi: 0, type: 'CRYPTO' }
-];
+// رفع خطای Cannot GET /
+app.get('/', (req, res) => {
+    res.json({ status: "Spectral AI Core is Online", version: "1.0.0", engine: "Gemini Pro" });
+});
 
 app.get('/api/status', (req, res) => res.json({ isEmergencyStopped }));
 
@@ -50,7 +47,7 @@ app.post('/api/emergency-stop', (req, res) => {
 
 app.get('/api/portfolio', async (req, res) => {
     try {
-        console.log("🔍 Fetching wallets from Coinbase...");
+        console.log("🔄 Synchronizing Wallets...");
         const walletsResponse = await Wallet.listWallets();
         const realWallets = walletsResponse.data || [];
         
@@ -79,7 +76,7 @@ app.get('/api/portfolio', async (req, res) => {
                         asset.currentPrice = parseFloat(ticker.price);
                         asset.entryPrice = asset.currentPrice; 
                     } catch (e) { 
-                        console.warn(`Price fetch failed for ${symbol}`);
+                        console.warn(`Price check failed for ${symbol}`);
                     }
                 }
                 portfolio.push(asset);
@@ -87,13 +84,16 @@ app.get('/api/portfolio', async (req, res) => {
         }
 
         if (portfolio.length === 0) {
-            portfolio = fallbackAssets;
+            portfolio = [
+              { symbol: 'EUR', name: 'Euro', balance: 0.00, currentPrice: 1, entryPrice: 1, roi: 0, type: 'FIAT' },
+              { symbol: 'BTC', name: 'Bitcoin', balance: 0, entryPrice: 0, currentPrice: 0, roi: 0, type: 'CRYPTO' }
+            ];
         }
 
         res.json(portfolio);
     } catch (e) {
-        console.error("❌ Portfolio Error:", e.message);
-        res.status(500).json({ error: e.message, portfolio: fallbackAssets });
+        console.error("❌ Portfolio Engine Error:", e.message);
+        res.status(500).json({ error: e.message });
     }
 });
 
