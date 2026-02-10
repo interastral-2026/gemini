@@ -2,7 +2,7 @@
 import { Asset, Trade, BotConfig } from "../types";
 
 // آدرس مستقیم بک‌بند شما در Railway
-const BACKEND_URL = "https://eco-production-d6cd.up.railway.app"; 
+const BACKEND_URL = "https://gemini-production-2d0d.up.railway.app"; 
 
 export const fetchPortfolio = async (config: BotConfig): Promise<Asset[]> => {
   try {
