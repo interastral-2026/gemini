@@ -8,7 +8,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://eco-production-d6cd.up.railway.app',
+        target: 'https://gemini-production-3ee9.up.railway.app',
         changeOrigin: true,
         secure: false,
       },

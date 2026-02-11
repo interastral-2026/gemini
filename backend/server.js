@@ -1,18 +1,34 @@
 import 'dotenv/config';
 import express from 'express';
-import cors from 'cors';
 import { Coinbase, Wallet } from '@coinbase/coinbase-sdk';
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Permissive CORS for development and deployment
-app.use(cors());
-app.options('*', cors()); // Enable pre-flight for all routes
+// 1. BULLETPROOF CORS MIDDLEWARE (Must be first)
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  // Allow localhost for development and your specific domain for production
+  if (origin && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,Accept,Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+  // Handle Preflight
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
 
 app.use(express.json());
 
-// Request logging for Railway logs
+// Request logging for diagnostics
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
@@ -33,11 +49,7 @@ try {
   console.error("❌ Auth Error:", err.message);
 }
 
-// Diagnostic Route
-app.get('/api', (req, res) => {
-  res.json({ status: "SPECTRAL_API_ACTIVE", online: true });
-});
-
+// Routes
 app.get('/api/status', (req, res) => {
   res.json({ isEmergencyStopped });
 });

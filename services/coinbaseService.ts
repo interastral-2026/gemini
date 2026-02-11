@@ -1,20 +1,12 @@
 import { Asset, Trade, BotConfig } from "../types";
 
-const API_BASE = "https://robot-production-9206.up.railway.app/api"; 
+const API_BASE = "https://gemini-production-3ee9.up.railway.app/api"; 
 
 export const fetchPortfolio = async (config: BotConfig): Promise<Asset[]> => {
   try {
-    const response = await fetch(`${API_BASE}/portfolio`, {
-      method: 'GET',
-      mode: 'cors',
-      headers: {
-        'Accept': 'application/json'
-      }
-    });
+    const response = await fetch(`${API_BASE}/portfolio`);
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Portfolio HTTP Error ${response.status}:`, errorText);
       throw new Error(`Server returned ${response.status}`);
     }
     
@@ -27,7 +19,7 @@ export const fetchPortfolio = async (config: BotConfig): Promise<Asset[]> => {
 
 export const fetchBotStatus = async (): Promise<{ isEmergencyStopped: boolean }> => {
   try {
-    const response = await fetch(`${API_BASE}/status`, { mode: 'cors' });
+    const response = await fetch(`${API_BASE}/status`);
     if (!response.ok) throw new Error(`Status HTTP Error: ${response.status}`);
     return await response.json();
   } catch (err) {
@@ -40,7 +32,6 @@ export const toggleEmergencyStop = async (stop: boolean): Promise<boolean> => {
   try {
     const response = await fetch(`${API_BASE}/emergency-stop`, {
       method: 'POST',
-      mode: 'cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ stop })
     });
@@ -55,14 +46,14 @@ export const toggleEmergencyStop = async (stop: boolean): Promise<boolean> => {
 
 export const fetchSignals = async (): Promise<any[]> => {
   try {
-    const response = await fetch(`${API_BASE}/signals`, { mode: 'cors' });
+    const response = await fetch(`${API_BASE}/signals`);
     return response.ok ? await response.json() : [];
   } catch (err) { return []; }
 };
 
 export const fetchTrades = async (): Promise<Trade[]> => {
   try {
-    const response = await fetch(`${API_BASE}/trades`, { mode: 'cors' });
+    const response = await fetch(`${API_BASE}/trades`);
     return response.ok ? await response.json() : [];
   } catch (err) { return []; }
 };
@@ -71,7 +62,6 @@ export const executeOrder = async (config: BotConfig, symbol: string, side: 'BUY
   try {
     const response = await fetch(`${API_BASE}/trade`, {
       method: 'POST',
-      mode: 'cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ symbol, side, amount })
     });
